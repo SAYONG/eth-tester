@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import os
 import time
 
 import rlp
@@ -171,7 +172,12 @@ def setup_tester_chain(genesis_params=None, genesis_state=None, num_accounts=Non
     if genesis_state is None:
         genesis_state = generate_genesis_state_for_keys(account_keys)
 
-    base_db = get_db_backend()
+    init_kwargs = {}
+    if os.environ.get('CHAIN_DB_BACKEND_CLASS') == 'eth.db.backends.level.LevelDB':
+        init_kwargs['db_path'] = os.environ.get('CHAIN_DB_BACKEND_PATH')
+
+    base_db = get_db_backend(**init_kwargs)
+    
 
     chain = MainnetTesterNoProofChain.from_genesis(base_db, genesis_params, genesis_state)
     return account_keys, chain
